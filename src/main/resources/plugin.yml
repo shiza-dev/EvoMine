@@ -1,0 +1,6 @@
+name: EvoMine
+version: '${project.version}'
+main: ru.kernel.EvoMine
+api-version: 1.18
+authors: [ KernelPanic ]
+description: Technical evolution in minecraft

@@ -1,0 +1,6 @@
+MySQL:
+  Active: false
+  Login: root
+  Password:
+  Port: 3306
+  Database: EvoMine
