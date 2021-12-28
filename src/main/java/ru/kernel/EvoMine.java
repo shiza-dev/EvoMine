@@ -1,10 +1,17 @@
 package ru.kernel;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import ru.kernel.Commands.MainCommand;
 import ru.kernel.Database.DatabaseRouter;
+import ru.kernel.Events.GroundFurnace.DirtFurnace;
+import ru.kernel.Events.GroundFurnace.Gui.ClickEvent;
+import ru.kernel.Events.GroundFurnace.PlaceBlock;
+import ru.kernel.Events.GroundFurnace.RemoveBlock;
+import ru.kernel.Events.Materials.BreakEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,27 +23,36 @@ public final class EvoMine extends JavaPlugin {
     private final String messagesPath = Bukkit.getServer().getWorldContainer().getPath() + sep + "plugins" + sep + "EvoMine" + sep + "language" + sep + "messages.yml";
     private final File messages = new File(messagesPath);
 
+    private final String itemManagerPath = Bukkit.getServer().getWorldContainer().getPath() + sep + "plugins" + sep + "EvoMine" + sep + "language" + sep + "itemmanager.yml";
+    private final File itemManager = new File(itemManagerPath);
+
     private final String sqlitePath = Bukkit.getServer().getWorldContainer().getPath() + sep + "plugins" + sep + "EvoMine" + sep + "EvoMine.db";
     private final File sqlite = new File(sqlitePath);
 
-    private static EvoMine instance;
     private static String status;
 
     @Override
     public void onEnable() {
-        // создаём первый раз конфиги и бд sqlite
+        // создаём первый раз конфиги и бд sqlite, mysql
+
         saveDefaultConfig();
 
-        String status = getConfig().getConfigurationSection("MySQL").getString("Active");
-        if(status.equals("true")) {
+        String status = getConfig().getConfigurationSection("DataSource").getString("Backend");
+        if(status.toLowerCase().equals("mysql")) {
             this.status = "MySQL";
+            try {
+                DatabaseRouter.writeDefault("MySQL");
+            } catch(SQLException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
         } else {
            this.status = "SQLite";
         }
 
         checkFiles();
+        RegisterEvents();
 
-        instance = this;
+        this.getCommand("evomine").setExecutor(new MainCommand());
     }
 
     @Override
@@ -54,10 +70,13 @@ public final class EvoMine extends JavaPlugin {
         if(!messages.exists()) {
             this.saveResource("language/messages.yml", false);
         }
+        if(!itemManager.exists()) {
+            this.saveResource("language/itemmanager.yml", false);
+        }
         if(!sqlite.exists() && status == "SQLite") {
             try {
                 sqlite.createNewFile();
-                DatabaseRouter.writeDefault();
+                DatabaseRouter.writeDefault("SQLite");
             } catch(IOException | SQLException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
@@ -73,11 +92,17 @@ public final class EvoMine extends JavaPlugin {
         }
     }
 
+    public void RegisterEvents() {
+        getServer().getPluginManager().registerEvents(new PlaceBlock(), this);
+        getServer().getPluginManager().registerEvents(new RemoveBlock(), this);
+        getServer().getPluginManager().registerEvents(new DirtFurnace(), this);
+        getServer().getPluginManager().registerEvents(new ClickEvent(), this);
+        getServer().getPluginManager().registerEvents(new BreakEvent(), this);
+    }
+
     // геттеры и сеттеры
 
-    public static EvoMine getInstance() {
-        return instance;
-    }
+    public File getItemManager() { return itemManager; }
 
     public static String getStatus() { return status; }
 
@@ -89,5 +114,9 @@ public final class EvoMine extends JavaPlugin {
         // возвращаю обработанный YamlConfiguration
         FileConfiguration config = YamlConfiguration.loadConfiguration(file);
         return config;
+    }
+
+    public String getColorText(String text) {
+        return ChatColor.translateAlternateColorCodes('&', text);
     }
 }

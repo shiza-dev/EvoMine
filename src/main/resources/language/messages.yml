@@ -1,2 +1,3 @@
-GroundFurnace:
-  guiName: "&7Ground Furnace"
+Messages:
+  prefix: "&7[&aEvoMine&7]"
+  reloadConfig: "&fConfig successfully reloaded!"

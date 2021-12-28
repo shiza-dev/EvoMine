@@ -1,6 +1,7 @@
 package ru.kernel.Database;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import ru.kernel.EvoMine;
 
@@ -8,13 +9,16 @@ import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+// откажусь от preparedstatement пока, ибо если писать в общем виде, то этот общий вид не подходит для остальных запросов
+
 public class DatabaseRouter {
     private static java.sql.Connection conn;
     private static ResultSet resSet;
-    private static EvoMine main = EvoMine.getInstance();
+    private static Statement stmt;
+    private static EvoMine main = EvoMine.getPlugin(EvoMine.class);
 
     // Открытие сессии
-    public static void connect() throws ClassNotFoundException {
+    private static void connect() throws ClassNotFoundException {
 
         Logger logger = Bukkit.getLogger();
 
@@ -31,15 +35,18 @@ public class DatabaseRouter {
         } else {
 
             FileConfiguration config = main.getConfig();
-            String login = config.getConfigurationSection("MySQL").getString("Login");
-            String password = config.getConfigurationSection("MySQL").getString("Password");
-            String database = config.getConfigurationSection("MySQL").getString("Database");
-            String port = config.getConfigurationSection("MySQL").getString("Port");
+            ConfigurationSection mysqlSection = config.getConfigurationSection("DataSource").getConfigurationSection("MySQL");
+            String host = mysqlSection.getString("Host");
+            String login = mysqlSection.getString("Login");
+            String password = mysqlSection.getString("Password");
+            String database = mysqlSection.getString("Database");
+            String port = mysqlSection.getString("Port");
 
             conn = null;
             Class.forName("com.mysql.jdbc.Driver");
             try {
-                conn = DriverManager.getConnection("jdbc:mysql://localhost:" + port + "/" + database + "?user=" + login + "&password=" + password);
+                String url = "jdbc:mysql://" + host + ":" + port + "/" + database;
+                conn = DriverManager.getConnection(url, login, password);
             } catch(SQLException e) {
                 logger.log(Level.WARNING, "Plugin catch SQLException! Please check your config");
                 Bukkit.shutdown();
@@ -47,47 +54,59 @@ public class DatabaseRouter {
         }
     }
 
-    public static void writeDefault() throws SQLException, ClassNotFoundException {
+    public static void writeDefault(String dbType) throws SQLException, ClassNotFoundException {
         connect();
-        Statement stmt = conn.createStatement();
-        stmt.execute("CREATE TABLE EvoMine (`haha` varchar(32));");
+        stmt = conn.createStatement();
+        if(dbType.equals("SQLite")) {
+            stmt.execute("CREATE TABLE if not exists ground_furnace(" +
+                    "ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "x INTEGER NOT NULL," +
+                    "y INTEGER NOT NULL," +
+                    "z INTEGER NOT NULL," +
+                    "fuel INTEGER DEFAULT 0," +
+                    "item VARCHAR(255)," +
+                    "litter BOOLEAN DEFAULT FALSE);");
+        } else {
+            stmt.executeUpdate("CREATE TABLE if not exists ground_furnace(" +
+                    "ID INTEGER PRIMARY KEY AUTO_INCREMENT," +
+                    "x INTEGER NOT NULL," +
+                    "y INTEGER NOT NULL," +
+                    "z INTEGER NOT NULL," +
+                    "fuel INTEGER DEFAULT 0," +
+                    "item VARCHAR(255) DEFAULT NULL," +
+                    "litter BOOLEAN DEFAULT FALSE);");
+        }
         stmt.close();
         close();
     }
     // SQL запрос к базе
-    public static void write(String sql, String... args) throws SQLException, ClassNotFoundException {
+    public static void write(String sql) throws SQLException, ClassNotFoundException {
 
         connect();
-        PreparedStatement p = conn.prepareStatement(sql);
-        for(String s : args) {
-            for(int i=1;i<args.length;i++) {
-                p.setString(i, s);
-            }
-        }
-        resSet = p.executeQuery(sql);
+        stmt = conn.createStatement();
+        stmt.execute(sql);
         close();
+
     }
 
     // Чтение таблицы
-    public static ResultSet read(String sql, String... args) throws SQLException, ClassNotFoundException {
+    public static ResultSet read(String sql) throws SQLException, ClassNotFoundException {
 
         connect();
-        PreparedStatement p = conn.prepareStatement(sql);
-        for(int i=1;i<args.length;i++) {
-            for(String s : args) {
-                p.setString(i, s);
-            }
-        }
 
-        resSet = p.executeQuery(sql);
+        stmt = conn.createStatement();
+        resSet = stmt.executeQuery(sql);
+        ResultSet localRes = resSet;
+
         close();
 
-        return(resSet);
+        return(localRes);
     }
 
     // Закрытие сессии
     private static void close() throws SQLException {
         if(resSet != null) { resSet.close(); }
+        if(stmt != null) { stmt.close(); }
         if(conn != null) { conn.close(); }
     }
 

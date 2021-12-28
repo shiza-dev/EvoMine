@@ -1,6 +1,9 @@
-MySQL:
-  Active: false
-  Login: root
-  Password:
-  Port: 3306
-  Database: EvoMine
+DataSource:
+  # Supported backend: MySQL, SQLite
+  Backend: SQLite
+  MySQL:
+    Host: localhost
+    Login: root
+    Password:
+    Port: 3306
+    Database: EvoMine

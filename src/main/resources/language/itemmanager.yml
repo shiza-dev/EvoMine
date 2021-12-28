@@ -1,0 +1,48 @@
+# Use \n for regex strings in lore's
+Blocks:
+  ground_furnace:
+    guiName: "&0Ground furnace"
+    itemName: "&fGround furnace"
+  litter:
+    setLitter: "&eSet litter in furnace"
+    loreSetLitter: "\n&7Litter prevents fire from burning the ground\n&7and get out of the oven, it's important\n&7part of an earthen oven. "
+    litterName: "&fLitter"
+  fuel:
+    setFuel: "&eSet fuel in furnace"
+    loreSetFuel: "\n&7Fuel allows you to maintain\n&7fire in the furnace, forcing to rise\n&7temperature, thereby melting the object\n&7even stronger. "
+  melting_item:
+    setMeltingItem: "&eSet melting item in furnace"
+    loreSetItem: "\n&7Put the item you wish to melt\n&7into the oven. However, there is\n&7the chance at which an item is completely\n&7will burn.\n\n&7Maximum number of items of the same type can be put: 8"
+Items:
+  Materials:
+    grass:
+      itemName: "&fGrass"
+      itemLore: "\n&7Just grass for crafting something."
+    piece_flint:
+      itemName: "&fPiece of flint"
+      itemLore: "\n&7Flint from gravel, but small."
+    pebble:
+      itemName: "&fPebble"
+      itemLore: "\n&7I don't know what I other can write here..It's default pebble."
+    stick:
+      itemName: "&fStick"
+      itemLore: "\n&7Dropes from tree leaves, used everywhere."
+    dry_grass:
+      itemName: "&fDry grass"
+      itemLore: "\n&7Dried grass burns easily, this property can come in handy."
+  Tools:
+    primitive_axe:
+      itemName: "&fPrimitive axe"
+      itemLore: "\n&7Allows to cut and process wood, but breaks very easily."
+    primitive_pickaxe:
+      itemName: "&fPrimitive pickaxe"
+      itemLore: "\n&7Allows to dig some stone's, but breaks very easily."
+    primitive_shovel:
+      itemName: "&fPrimitive shovel"
+      itemLore: "\n&7Allows to dig the ground, but breaks very easily."
+    primitive_hoe:
+      itemName: "&fPrimitive hoe"
+      itemLore: "\n&7Allows to plow ground, but breaks very easily."
+    primitive_rod:
+      itemName: "&fPrimitive rod"
+      itemLore: "\n&7Lets you fish, but breaks very easily."

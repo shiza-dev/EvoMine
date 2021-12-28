@@ -4,3 +4,7 @@ main: ru.kernel.EvoMine
 api-version: 1.18
 authors: [ KernelPanic ]
 description: Technical evolution in minecraft
+commands:
+  evomine:
+    usage: /<command>
+    description: Main evomine command
